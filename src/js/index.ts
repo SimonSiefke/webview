@@ -2,10 +2,19 @@
 import bindings from 'bindings'
 const cpp = bindings('webview');
 
-export class WebView {
+interface Options {
+  title: string;
+  url: string;
+  width: number;
+  height: number;
+  resizable: boolean;
+  debug: boolean;
+}
+
+export class WebView implements Options {
   private wvs = new cpp.WebView();
 
-  constructor(options: Partial<WebView>) {
+  constructor(options: Partial<Options>) {
     Object.assign(this, options);
   }
 
@@ -22,26 +31,35 @@ export class WebView {
   get debug(): boolean { return this.wvs.getDebug() }
   set debug(value: boolean) { this.wvs.setDebug(value) }
 
-  /** THIS IS BLOCKING. Execute this in a Worker instead. */
-  init() { return cpp.init(this.wvs); }
-
-  setTitle(title: string) {
-    return cpp.setTitle(this.wvs, title);
+  init() {
+    this.wvs.init();
+    const next = () => {
+      this.wvs.loop();
+      // Use microtask to ensure not to block the main thread.
+      // Still figuring out what the best interval is.
+      setTimeout(next, 10);
+    };
+    next();
   }
+
   terminate() {
-    return cpp.terminate(this.wvs);
+    return this.wvs.terminate();
   }
   eval(javascript: string) {
-    return cpp.eval(this.wvs, javascript);
+    return this.wvs.eval(javascript);
   }
   injectCSS(css: string) {
-    return cpp.injectCSS(this.wvs, css);
+    return this.wvs.injectCSS(css);
   }
   exit() {
-    return cpp.exit(this.wvs);
+    return this.wvs.exit();
   }
   // debug() { return bridge.debug(this); }
-  printLog() {
-    return cpp.printLog(this.wvs);
+  printLog(log: string) {
+    return cpp.printLog(log);
   }
 }
+
+process.on('message', (value) => {
+
+});

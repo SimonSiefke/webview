@@ -3,9 +3,9 @@
     {
       "target_name": "webview",
       "sources": [
-        "src/js-types.cpp",
-        "src/webview-struct.cpp",
-        "src/main.cpp"
+        "src/cpp/js-types.cpp",
+        "src/cpp/webview-struct.cpp",
+        "src/cpp/main.cpp"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"

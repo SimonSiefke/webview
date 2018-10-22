@@ -29,12 +29,20 @@ public:
   Napi::Value SetExternalInvokeCB(const Napi::CallbackInfo& info);
   struct webview *getStruct();
 
+  Napi::Value Dialog(const Napi::CallbackInfo& info);
+  Napi::Value Init(const Napi::CallbackInfo& info);
+  Napi::Value Loop(const Napi::CallbackInfo& info);
+  Napi::Value Terminate(const Napi::CallbackInfo& info);
+  Napi::Value Eval(const Napi::CallbackInfo& info);
+  Napi::Value InjectCSS(const Napi::CallbackInfo& info);
+  Napi::Value Exit(const Napi::CallbackInfo& info);
 
 private:
   static Napi::FunctionReference constructor;
   void ExternalInvoke(std::string arg);
 
   Napi::Function external_invoke;
+  bool loaded = false;
   struct webview *web = nullptr;
 
   void *userdata;
