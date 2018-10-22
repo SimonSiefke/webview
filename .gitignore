@@ -1,7 +1,5 @@
 node_modules
 drafts
 index.js
-src/napi*
-src/webview.h
 build
 .vscode/settings.json
