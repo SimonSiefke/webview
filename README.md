@@ -7,6 +7,7 @@ You need [node-gyp](https://github.com/nodejs/node-gyp), which requires Python
 then it will be built.
 
 ## Example
+For examples to how to use this library, see files under `test` folder.
 ![Screenshot showing English Wikipedia](./screencap.png)
 
 ## License

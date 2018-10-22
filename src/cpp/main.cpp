@@ -2,25 +2,12 @@
 
 #include <napi.h>
 #include "js-types.h"
-#include "webview-struct.h"
+#include "webview-wrap.h"
 
 using Napi::Value;
 using Napi::Function;
 using Napi::Object;
 using Napi::String;
-
-/*
-Value WebviewDialog(
-  struct webview *w,
-  enum webview_dialog_type dlgtype,
-  int flags,
-  const char *title,
-  const char *arg,
-  char *result,
-  size_t resultsz
-) {
-}
-*/
 
 Value WebViewDebug(const Napi::CallbackInfo& info) {
   expectArgumentSize(info, 1);
@@ -37,7 +24,7 @@ Value WebViewPrintLog(const Napi::CallbackInfo& info) {
 }
 
 Object Init(Napi::Env env, Object exports) {
-  WebviewStruct::Init(env, exports);
+  Webview::Init(env, exports);
   exports.Set(String::New(env, "debug"), Function::New(env, WebViewDebug));
   exports.Set(String::New(env, "printLog"), Function::New(env, WebViewPrintLog));
 

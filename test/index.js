@@ -2,7 +2,7 @@
 const { WebView } = require('../')
 
 const view = new WebView({
-  title: 'Wikipedia',
+  title: 'YouTube',
   url: 'https://www.youtube.com',
   height: 800,
   width: 600,

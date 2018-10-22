@@ -4,7 +4,7 @@
       "target_name": "webview",
       "sources": [
         "src/cpp/js-types.cpp",
-        "src/cpp/webview-struct.cpp",
+        "src/cpp/webview-wrap.cpp",
         "src/cpp/main.cpp"
       ],
       "include_dirs": [

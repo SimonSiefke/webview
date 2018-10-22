@@ -2,16 +2,14 @@
 #define WEBVIEW_STRUCT_H
 
 #include "webview.h"
-#include <stdlib.h>
 #include <napi.h>
 
-class WebviewStruct: public Napi::ObjectWrap<WebviewStruct> {
+class Webview: public Napi::ObjectWrap<Webview> {
 public:
   static Napi::Object Init(Napi::Env env, Napi::Object exports);
-  static WebviewStruct* fromArgs(const Napi::CallbackInfo& info);
 
-  WebviewStruct(const Napi::CallbackInfo& info);
-  ~WebviewStruct();
+  Webview(const Napi::CallbackInfo& info);
+  ~Webview();
 
   Napi::Value GetURL(const Napi::CallbackInfo& info);
   Napi::Value GetTitle(const Napi::CallbackInfo& info);
@@ -27,7 +25,6 @@ public:
   Napi::Value SetResizable(const Napi::CallbackInfo& info);
   Napi::Value SetDebug(const Napi::CallbackInfo& info);
   Napi::Value SetExternalInvokeCB(const Napi::CallbackInfo& info);
-  struct webview *getStruct();
 
   Napi::Value Dialog(const Napi::CallbackInfo& info);
   Napi::Value Init(const Napi::CallbackInfo& info);
