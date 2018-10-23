@@ -31,6 +31,11 @@ void expectBoolean(const Napi::Value value) {
     throw Napi::TypeError::New(value.Env(), "Expected a boolean.");
   }
 }
+void expectObject(const Napi::Value value) {
+  if (!value.IsObject()) {
+    throw Napi::TypeError::New(value.Env(), "Expected a object.");
+  }
+}
 
 void expectJSType(const Napi::Value value, JSType type) {
   switch (type) {
@@ -38,6 +43,7 @@ void expectJSType(const Napi::Value value, JSType type) {
     case number:   return expectNumber(value);
     case function: return expectFunction(value);
     case boolean:  return expectBoolean(value);
+    case object:   return expectObject(value);
   }
 }
 

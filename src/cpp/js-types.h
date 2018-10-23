@@ -3,7 +3,7 @@
 #include <napi.h>
 
 enum JSType {
-  string, number, function, boolean
+  string, number, function, boolean, object
 };
 
 const char* toCString(Napi::String v8_string);

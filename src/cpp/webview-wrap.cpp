@@ -2,6 +2,7 @@
 #include "js-types.h"
 
 using Napi::Object;
+using Napi::Array;
 using Napi::Function;
 using Napi::Value;
 using Napi::Number;
@@ -18,6 +19,15 @@ Webview::Webview(const CallbackInfo& info) : Napi::ObjectWrap<Webview>(info) {
   web->width = 100;
   web->debug = false;
   web->resizable = true;
+
+  if (info.Length() > 0) {
+    expectJSType(info[0], object);
+    Object arg = info[0].As<Object>();
+    Object self = info.This().As<Object>();
+
+    Function assign = info.Env().Global().Get("Object").As<Object>().Get("assign").As<Function>();
+    assign.Call({ self, arg });
+  }
 }
 
 Webview::~Webview() {
@@ -29,18 +39,12 @@ Object Webview::Init(Napi::Env env, Object exports) {
   Napi::HandleScope scope(env);
 
   Function func = DefineClass(env, "WebView", {
-    InstanceMethod("getURL", &Webview::GetURL),
-    InstanceMethod("setURL", &Webview::SetURL),
-    InstanceMethod("getTitle", &Webview::GetTitle),
-    InstanceMethod("setTitle", &Webview::SetTitle),
-    InstanceMethod("getWidth", &Webview::GetWidth),
-    InstanceMethod("setWidth", &Webview::SetWidth),
-    InstanceMethod("getHeight", &Webview::GetHeight),
-    InstanceMethod("setHeight", &Webview::SetHeight),
-    InstanceMethod("getResizable", &Webview::GetResizable),
-    InstanceMethod("setResizable", &Webview::SetResizable),
-    InstanceMethod("getDebug", &Webview::GetDebug),
-    InstanceMethod("setDebug", &Webview::SetDebug),
+    InstanceAccessor("url", &Webview::GetURL, &Webview::SetURL),
+    InstanceAccessor("title", &Webview::GetTitle, &Webview::SetTitle),
+    InstanceAccessor("width", &Webview::GetWidth, &Webview::SetWidth),
+    InstanceAccessor("height", &Webview::GetHeight, &Webview::SetHeight),
+    InstanceAccessor("resizable", &Webview::GetResizable, &Webview::SetResizable),
+    InstanceAccessor("debug", &Webview::GetDebug, &Webview::SetDebug),
 
     InstanceMethod("init", &Webview::Init),
     InstanceMethod("loop", &Webview::Loop),
@@ -48,7 +52,8 @@ Object Webview::Init(Napi::Env env, Object exports) {
     InstanceMethod("terminate", &Webview::Terminate),
     InstanceMethod("eval", &Webview::Eval),
     InstanceMethod("injectCSS", &Webview::InjectCSS),
-    InstanceMethod("exit", &Webview::Exit)
+    InstanceMethod("exit", &Webview::Exit),
+    InstanceMethod("setFullscreen", &Webview::SetFullScreen),
   });
 
   constructor = Napi::Persistent(func);
@@ -58,11 +63,9 @@ Object Webview::Init(Napi::Env env, Object exports) {
   return exports;
 }
 
-Value Webview::SetExternalInvokeCB(const CallbackInfo& info) {
-  expectArgumentSize(info, 1);
-  expectJSType(info[0], function);
-  external_invoke = info[0].As<Function>();
-  return info.Env().Undefined();
+void Webview::SetExternalInvokeCB(const CallbackInfo& info, const Napi::Value& value) {
+  expectJSType(value, function);
+  external_invoke = value.As<Function>();
 }
 
 void Webview::ExternalInvoke(std::string arg) {
@@ -73,72 +76,60 @@ void Webview::ExternalInvoke(std::string arg) {
 Value Webview::GetURL(const CallbackInfo& info) {
   return String::New(info.Env(), web->url);
 }
-Value Webview::SetURL(const CallbackInfo& info) {
-  expectArgumentSize(info, 1);
-  expectJSType(info[0], string);
-  web->url = toCString(info[0].As<String>());
-  return GetURL(info);
+void Webview::SetURL(const CallbackInfo& info, const Napi::Value& value) {
+  expectJSType(value, string);
+  web->url = toCString(value.As<String>());
 }
 
 // Title
 Value Webview::GetTitle(const CallbackInfo& info) {
   return String::New(info.Env(), web->title);
 }
-Value Webview::SetTitle(const CallbackInfo& info) {
-  expectArgumentSize(info, 1);
-  expectJSType(info[0], string);
-  const char* title = toCString(info[0].As<String>());
+void Webview::SetTitle(const CallbackInfo& info, const Napi::Value& value) {
+  expectJSType(value, string);
+  const char* title = toCString(value.As<String>());
   if (loaded) {
     webview_set_title(web, title);
   } else {
     web->title = title;
   }
-  return GetTitle(info);
 }
 
 // Width
 Value Webview::GetWidth(const CallbackInfo& info) {
   return Number::New(info.Env(), web->width);
 }
-Value Webview::SetWidth(const CallbackInfo& info) {
-  expectArgumentSize(info, 1);
-  expectJSType(info[0], number);
-  double width = info[0].As<Number>();
+void Webview::SetWidth(const CallbackInfo& info, const Napi::Value& value) {
+  expectJSType(value, number);
+  double width = value.As<Number>();
   web->width = width;
-  return GetWidth(info);
 }
 
 // Height
 Value Webview::GetHeight(const CallbackInfo& info) {
   return Number::New(info.Env(), web->height);
 }
-Value Webview::SetHeight(const CallbackInfo& info) {
-  expectArgumentSize(info, 1);
-  expectJSType(info[0], number);
-  web->height = info[0].As<Number>();
-  return GetHeight(info);
+void Webview::SetHeight(const CallbackInfo& info, const Napi::Value& value) {
+  expectJSType(value, number);
+  web->height = value.As<Number>();
 }
 
 // Resizable
 Value Webview::GetResizable(const CallbackInfo& info) {
   return Napi::Boolean::New(info.Env(), web->resizable);
 }
-Value Webview::SetResizable(const CallbackInfo& info) {
-  expectArgumentSize(info, 1);
-  expectJSType(info[0], boolean);
-  web->resizable = info[0].As<Napi::Boolean>();
-  return GetResizable(info);
+void Webview::SetResizable(const CallbackInfo& info, const Napi::Value& value) {
+  expectJSType(value, boolean);
+  web->resizable = value.As<Napi::Boolean>();
 }
 
 // Debug
 Value Webview::GetDebug(const CallbackInfo& info) {
   return Napi::Boolean::New(info.Env(), web->debug);
 }
-Value Webview::SetDebug(const CallbackInfo& info) {
-  expectArgumentSize(info, 1);
-  expectJSType(info[0], boolean);
-  web->debug = info[0].As<Napi::Boolean>();
-  return GetDebug(info);
+void Webview::SetDebug(const CallbackInfo& info, const Napi::Value& value) {
+  expectJSType(value, boolean);
+  web->debug = value.As<Napi::Boolean>();
 }
 
 // Dialog
@@ -173,12 +164,20 @@ Value Webview::Dialog(const CallbackInfo& info) {
   return String::New(info.Env(), result);
 }
 
+Value Webview::SetFullScreen(const CallbackInfo& info) {
+  expectArgumentSize(info, 1);
+  expectJSType(info[0], boolean);
+  bool fullscreen = info[0].ToBoolean();
+  webview_set_fullscreen(web, fullscreen);
+  return info.This();
+}
 
 // Methods
+
+
 Value Webview::Init(const CallbackInfo& info) {
   loaded = true;
   webview_init(web);
-  // while (webview_loop(web, false) == 0);
   return info.Env().Undefined();
 }
 
@@ -186,7 +185,6 @@ Value Webview::Loop(const CallbackInfo& info) {
   if (!loaded) {
     throw Napi::Error::New(info.Env(), "Webview can only enter loop when loaded.");
   }
-  loaded = true;
   return Number::New(info.Env(), webview_loop(web, true));
 }
 
