@@ -1981,6 +1981,9 @@ WEBVIEW_API int webview_init(struct webview *w) {
   objc_msgSend(w->priv.webview, sel_registerName("setUIDelegate:"), uiDel);
   objc_msgSend(w->priv.webview, sel_registerName("setNavigationDelegate:"),
                navDel);
+  objc_msgSend(w->priv.webview, sel_registerName("setCustomUserAgent:"),
+      get_nsstring(
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Safari/605.1.15"));
 
   id nsURL = objc_msgSend((id)objc_getClass("NSURL"),
                           sel_registerName("URLWithString:"),

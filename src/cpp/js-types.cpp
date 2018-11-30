@@ -1,6 +1,4 @@
 #include <stdlib.h>
-#include <iostream>
-#include <sstream>
 #include "js-types.h"
 
 const char* toCString(Napi::String v8_string) {

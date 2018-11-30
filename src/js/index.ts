@@ -22,15 +22,14 @@ interface WebViewJS extends Options {
 
 export function WebView(options: Partial<Options>) {
   const wvs: WebViewJS = new cpp.WebView(options);
-  wvs.show = function show() {
-    (this as any).init();
+  wvs.show = function show(this: any) {
+    this.init();
     const next = () => {
-      this.loop();
+      this.poke();
       // Use microtask to ensure not to block the main thread.
-      // Still figuring out what the best interval is.
-      setTimeout(next, 10);
+      setTimeout(next, 1);
     };
     next();
-  }
+  };
   return wvs;
 }

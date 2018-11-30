@@ -1,3 +1,6 @@
+#include <thread>
+#include <stdio.h>
+#include <iostream>
 #include "webview-wrap.h"
 #include "js-types.h"
 
@@ -12,13 +15,14 @@ using Napi::CallbackInfo;
 Napi::FunctionReference Webview::constructor;
 
 Webview::Webview(const CallbackInfo& info) : Napi::ObjectWrap<Webview>(info) {
-  web = (struct webview *) malloc(sizeof(struct webview));
-  web->title = "";
-  web->url = "";
-  web->height = 100;
-  web->width = 100;
-  web->debug = false;
-  web->resizable = true;
+  std::atomic_init(&Loaded, false);
+  Web = (struct webview *) malloc(sizeof(struct webview));
+  Web->title = "";
+  Web->url = "";
+  Web->height = 100;
+  Web->width = 100;
+  Web->debug = false;
+  Web->resizable = true;
 
   if (info.Length() > 0) {
     expectJSType(info[0], object);
@@ -31,8 +35,12 @@ Webview::Webview(const CallbackInfo& info) : Napi::ObjectWrap<Webview>(info) {
 }
 
 Webview::~Webview() {
-  free(web);
-  web = nullptr;
+  free(Web);
+  Web = nullptr;
+}
+
+Value Webview::Show(const CallbackInfo& info) {
+  // This is currently implemented in JavaScript.
 }
 
 Object Webview::Init(Napi::Env env, Object exports) {
@@ -47,7 +55,8 @@ Object Webview::Init(Napi::Env env, Object exports) {
     InstanceAccessor("debug", &Webview::GetDebug, &Webview::SetDebug),
 
     InstanceMethod("init", &Webview::Init),
-    InstanceMethod("loop", &Webview::Loop),
+    InstanceMethod("show", &Webview::Show, napi_writable),
+    InstanceMethod("poke", &Webview::Poke),
     InstanceMethod("dialog", &Webview::Dialog),
     InstanceMethod("terminate", &Webview::Terminate),
     InstanceMethod("eval", &Webview::Eval),
@@ -74,62 +83,62 @@ void Webview::ExternalInvoke(std::string arg) {
 
 // URL
 Value Webview::GetURL(const CallbackInfo& info) {
-  return String::New(info.Env(), web->url);
+  return String::New(info.Env(), Web->url);
 }
 void Webview::SetURL(const CallbackInfo& info, const Napi::Value& value) {
   expectJSType(value, string);
-  web->url = toCString(value.As<String>());
+  Web->url = toCString(value.As<String>());
 }
 
 // Title
 Value Webview::GetTitle(const CallbackInfo& info) {
-  return String::New(info.Env(), web->title);
+  return String::New(info.Env(), Web->title);
 }
 void Webview::SetTitle(const CallbackInfo& info, const Napi::Value& value) {
   expectJSType(value, string);
   const char* title = toCString(value.As<String>());
-  if (loaded) {
-    webview_set_title(web, title);
+  if (Loaded) {
+    webview_set_title(Web, title);
   } else {
-    web->title = title;
+    Web->title = title;
   }
 }
 
 // Width
 Value Webview::GetWidth(const CallbackInfo& info) {
-  return Number::New(info.Env(), web->width);
+  return Number::New(info.Env(), Web->width);
 }
 void Webview::SetWidth(const CallbackInfo& info, const Napi::Value& value) {
   expectJSType(value, number);
   double width = value.As<Number>();
-  web->width = width;
+  Web->width = width;
 }
 
 // Height
 Value Webview::GetHeight(const CallbackInfo& info) {
-  return Number::New(info.Env(), web->height);
+  return Number::New(info.Env(), Web->height);
 }
 void Webview::SetHeight(const CallbackInfo& info, const Napi::Value& value) {
   expectJSType(value, number);
-  web->height = value.As<Number>();
+  Web->height = value.As<Number>();
 }
 
 // Resizable
 Value Webview::GetResizable(const CallbackInfo& info) {
-  return Napi::Boolean::New(info.Env(), web->resizable);
+  return Napi::Boolean::New(info.Env(), Web->resizable);
 }
 void Webview::SetResizable(const CallbackInfo& info, const Napi::Value& value) {
   expectJSType(value, boolean);
-  web->resizable = value.As<Napi::Boolean>();
+  Web->resizable = value.As<Napi::Boolean>();
 }
 
 // Debug
 Value Webview::GetDebug(const CallbackInfo& info) {
-  return Napi::Boolean::New(info.Env(), web->debug);
+  return Napi::Boolean::New(info.Env(), Web->debug);
 }
 void Webview::SetDebug(const CallbackInfo& info, const Napi::Value& value) {
   expectJSType(value, boolean);
-  web->debug = value.As<Napi::Boolean>();
+  Web->debug = value.As<Napi::Boolean>();
 }
 
 // Dialog
@@ -159,7 +168,7 @@ Value Webview::Dialog(const CallbackInfo& info) {
   }
 
   char result[4096] = "";
-  webview_dialog(web, static_cast<webview_dialog_type>(dlgtype), flags, title, arg, result, sizeof(result));
+  webview_dialog(Web, static_cast<webview_dialog_type>(dlgtype), flags, title, arg, result, sizeof(result));
 
   return String::New(info.Env(), result);
 }
@@ -168,48 +177,47 @@ Value Webview::SetFullScreen(const CallbackInfo& info) {
   expectArgumentSize(info, 1);
   expectJSType(info[0], boolean);
   bool fullscreen = info[0].ToBoolean();
-  webview_set_fullscreen(web, fullscreen);
+  webview_set_fullscreen(Web, fullscreen);
   return info.This();
 }
 
 // Methods
 
-
 Value Webview::Init(const CallbackInfo& info) {
-  loaded = true;
-  webview_init(web);
+  Loaded = true;
+  webview_init(Web);
   return info.Env().Undefined();
 }
 
-Value Webview::Loop(const CallbackInfo& info) {
-  if (!loaded) {
+Value Webview::Poke(const CallbackInfo& info) {
+  if (!Loaded) {
     throw Napi::Error::New(info.Env(), "Webview can only enter loop when loaded.");
   }
-  return Number::New(info.Env(), webview_loop(web, true));
+  return Number::New(info.Env(), webview_loop(Web, true));
 }
 
 Value Webview::Terminate(const CallbackInfo& info) {
-  loaded = false;
-  webview_terminate(web);
+  Loaded = false;
+  webview_terminate(Web);
   return info.Env().Undefined();
 }
 
 Value Webview::Eval(const CallbackInfo& info) {
   expectArgumentSize(info, 1);
   expectJSType(info[0], string);
-  webview_eval(web, toCString(info[0].As<String>()));
+  webview_eval(Web, toCString(info[0].As<String>()));
   return info.Env().Undefined();
 }
 
 Value Webview::InjectCSS(const CallbackInfo& info) {
   expectArgumentSize(info, 1);
   expectJSType(info[0], string);
-  webview_inject_css(web, toCString(info[0].As<String>()));
+  webview_inject_css(Web, toCString(info[0].As<String>()));
   return info.Env().Undefined();
 }
 
 Value Webview::Exit(const CallbackInfo& info) {
-  loaded = false;
-  webview_exit(web);
+  Loaded = false;
+  webview_exit(Web);
   return info.Env().Undefined();
 }

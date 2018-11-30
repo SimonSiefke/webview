@@ -2,6 +2,7 @@
 #define WEBVIEW_STRUCT_H
 
 #include "webview.h"
+#include <stdio.h>
 #include <napi.h>
 
 class Webview: public Napi::ObjectWrap<Webview> {
@@ -13,7 +14,8 @@ public:
 
   Napi::Value Dialog(const Napi::CallbackInfo& info);
   Napi::Value Init(const Napi::CallbackInfo& info);
-  Napi::Value Loop(const Napi::CallbackInfo& info);
+  Napi::Value Poke(const Napi::CallbackInfo& info);
+  Napi::Value Show(const Napi::CallbackInfo& info);
   Napi::Value Terminate(const Napi::CallbackInfo& info);
   Napi::Value Eval(const Napi::CallbackInfo& info);
   Napi::Value InjectCSS(const Napi::CallbackInfo& info);
@@ -24,6 +26,8 @@ public:
 private:
   static Napi::FunctionReference constructor;
   void ExternalInvoke(std::string arg);
+
+  std::atomic<bool> Loaded;
 
   Napi::Value GetURL(const Napi::CallbackInfo& info);
   Napi::Value GetTitle(const Napi::CallbackInfo& info);
@@ -41,8 +45,7 @@ private:
   void SetExternalInvokeCB(const Napi::CallbackInfo& info, const Napi::Value& value);
 
   Napi::Function external_invoke;
-  bool loaded = false;
-  struct webview *web = nullptr;
+  struct webview *Web = nullptr;
 
   void *userdata;
 };
