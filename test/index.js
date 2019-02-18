@@ -1,9 +1,14 @@
 #!/usr/local/bin/node
-const { WebView } = require('../')
+const { WebView } = require('../');
+const express = require('express');
+
+const app = express();
+app.use(express.static(__dirname));
+app.listen(3000);
 
 const view = WebView({
-  title: 'Google',
-  url: 'https://www.google.com',
+  title: 'Accueil',
+  url: `http://localhost:3000/index.html`,
   height: 600,
   width: 800,
 });
