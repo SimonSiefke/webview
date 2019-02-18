@@ -1,5 +1,5 @@
 {
-  "name": "webview.cpp",
+  "name": "webview",
   "version": "0.2.0",
   "main": "./lib/index.js",
   "license": "MIT",
