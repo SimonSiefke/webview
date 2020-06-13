@@ -1,5 +1,7 @@
-# webview.js
-Electron without Chromium based on [webview](https://github.com/zserge/webview).
+# [Deprecated] - webview.js
+WebKit for macOS Catalina has **horrendous** font rendering. Please use Chromium or Firefox instead.
+
+~~Electron without Chromium based on [webview](https://github.com/zserge/webview).~~
 
 ## Build
 You need [node-gyp](https://github.com/nodejs/node-gyp), which requires Python
