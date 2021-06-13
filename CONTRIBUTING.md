@@ -1,5 +1,13 @@
 # Contributing
 
+## Prerequisites
+
+Ubuntu:
+
+```sh
+sudo apt-get install libgtk-3-dev
+```
+
 ## Quickstart
 
 ```sh
