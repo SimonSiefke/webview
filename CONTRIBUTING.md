@@ -1,7 +1,10 @@
-## Prerequisites
+# Contributing
 
-On Ubuntu:
+## Quickstart
 
 ```sh
-sudo apt-get install libwebkit2gtk-4.0-dev
+git clone git@github.com:SimonSiefke/webview.git &&
+cd webview &&
+npm ci &&
+npm test
 ```
