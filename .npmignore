@@ -1,8 +1,0 @@
-node_modules
-drafts
-
-src
-build
-test
-*.ts
-.vscode

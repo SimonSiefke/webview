@@ -1,0 +1,12 @@
+{
+  "targets": [
+    {
+      "target_name": "webview",
+      "sources": [ "webview.cc" ],
+      'libraries': [
+         '-lutil',
+        '<!@(pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0)',
+      ]
+    }
+  ]
+}

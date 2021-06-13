@@ -1,20 +1,28 @@
 {
-  "name": "webview",
-  "version": "0.2.0",
-  "main": "./lib/index.js",
-  "license": "MIT",
-  "typings": "index.d.ts",
-  "gypfile": true,
+  "name": "hello_world",
+  "version": "0.0.0",
+  "description": "Node.js Addons Example #1",
+  "main": "webview.js",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "build": "./tools/build.sh",
-    "install": "node-gyp rebuild --silent"
+    "build": "cd build && make",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch"
   },
+  "gypfile": true,
   "dependencies": {
-    "bindings": "^1.3.1",
-    "node-addon-api": "^1.6.2"
+    "bindings": "^1.5.0",
+    "node-addon-api": "^3.2.1"
   },
   "devDependencies": {
-    "@types/node": "^10.12.10",
-    "typescript": "^3.2.1"
-  }
+    "@types/jest": "^26.0.23",
+    "jest": "^27.0.4",
+    "prettier": "^2.3.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
+  "license": "MIT"
 }
