@@ -2,4 +2,4 @@ import bindings from 'bindings'
 
 const addon = bindings('webview')
 
-export const hello = () => addon.hello()
+export const createWebview = () => addon.createWebview()
